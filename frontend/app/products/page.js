@@ -22,6 +22,7 @@ import {
   DialogContentText,
   DialogTitle,
   TextField,
+  Snackbar,
   Button,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -53,6 +54,10 @@ const Products = () => {
     price: "",
     quantity: "",
   }); // State for holding edited product data
+
+  // Snackbar state
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   // Fetch products from backend
   useEffect(() => {
@@ -87,6 +92,16 @@ const Products = () => {
     setNewProduct((prevProduct) => ({ ...prevProduct, [name]: value }));
   };
 
+  // Snackbar handler
+  const handleSnackbar = (message) => {
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
+  };
+
   // Add product to backend
   const handleSubmit = async () => {
     try {
@@ -94,6 +109,7 @@ const Products = () => {
       setProducts([...products, response.data]);
       setDialogOpen(false);
       setNewProduct({ name: "", description: "", price: "", quantity: "" });
+      handleSnackbar("Product added successfully!");
     } catch (error) {
       console.error("Error adding product", error);
     }
@@ -110,7 +126,7 @@ const Products = () => {
   };
 
   const handleAddToFavorites = () => {
-    alert("Added to Favorites!");
+    handleSnackbar("Added to Favorites!");
   };
 
   // Open edit dialog and set initial values
@@ -130,7 +146,7 @@ const Products = () => {
       const response = await axios.put(`${API_URL}/${selectedProduct.id}`, editedProduct);
       setProducts(products.map((prod) => (prod.id === response.data.id ? response.data : prod)));
       setEditDialogOpen(false);
-      alert("Product updated successfully!");
+      handleSnackbar("Product updated successfully!");
     } catch (error) {
       console.error("Error updating product", error);
     }
@@ -142,7 +158,7 @@ const Products = () => {
       await axios.delete(`${API_URL}/${selectedProduct.id}`);
       setProducts(products.filter((prod) => prod.id !== selectedProduct.id));
       setDetailDialogOpen(false);
-      alert("Product deleted successfully!");
+      handleSnackbar("Product deleted successfully!");
     } catch (error) {
       console.error("Error deleting product", error);
     }
