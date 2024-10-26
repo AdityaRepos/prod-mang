@@ -12,6 +12,7 @@ import {
   ListItem,
   ListItemText,
   Box,
+  Alert,
   Card,
   CardContent,
   CardMedia,
@@ -283,10 +284,18 @@ const Products = () => {
       {/* Snackbar for actions */}
       <Snackbar
         open={snackbarOpen}
-        autoHideDuration={3000}
+        autoHideDuration={1500}
         onClose={handleCloseSnackbar}
         message={snackbarMessage}
-      />
+      >
+        <Alert
+          onClose={handleClose}
+          variant="filled"
+          sx={{ bgcolor: 'success.main' }}
+        >
+        {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
