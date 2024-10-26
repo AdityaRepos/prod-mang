@@ -290,6 +290,7 @@ const Products = () => {
       >
         <Alert
           onClose={handleClose}
+          severity="success"
           variant="filled"
           sx={{ bgcolor: 'success.main' }}
         >
