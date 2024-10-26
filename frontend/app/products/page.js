@@ -31,7 +31,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 // Backend API URL
-const API_URL = "http://localhost:4000/products";
+const API_URL = "https://prod-mang-api.vercel.app/products";
 
 const Products = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
