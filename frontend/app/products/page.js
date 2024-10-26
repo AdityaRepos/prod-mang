@@ -291,7 +291,7 @@ const Products = () => {
           onClose={handleClose}
           severity="success"
           variant="filled"
-          sx={{ bgcolor: 'success.main' }}
+          sx={{ width: '100%' }}
         >
         {snackbarMessage}
         </Alert>
