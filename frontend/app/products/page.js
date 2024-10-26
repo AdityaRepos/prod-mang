@@ -286,7 +286,6 @@ const Products = () => {
         open={snackbarOpen}
         autoHideDuration={1500}
         onClose={handleCloseSnackbar}
-        message={snackbarMessage}
       >
         <Alert
           onClose={handleClose}
