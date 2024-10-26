@@ -1,30 +1,36 @@
 const express = require("express");
-const { Client } = require("pg");
+const { Pool } = require("pg"); // Use Pool instead of Client
 const cors = require("cors");
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-const client = new Client({
+// Configure the database pool
+const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   port: process.env.DB_PORT,
+  max: 30, // Set maximum pool size
+  idleTimeoutMillis: 30000, // Close idle connections after 30 seconds
 });
 
-client.connect((err) => {
+// Test database connection
+pool.connect((err, client, release) => {
   if (err) {
     console.error("Database connection error", err.stack);
   } else {
     console.log("Connected to the database");
+    release(); // Release the test client immediately
   }
 });
 
+// Example route to test connection
 app.get("/hello", async (req, res) => {
   try {
-    const result = await client.query("SELECT $1::text as message", ["Hello world!"]);
+    const result = await pool.query("SELECT $1::text as message", ["Hello world!"]);
     res.send(result.rows[0].message);
   } catch (error) {
     console.error("Error executing query", error.stack);
@@ -32,9 +38,10 @@ app.get("/hello", async (req, res) => {
   }
 });
 
+// Fetch all products
 app.get("/products", async (req, res) => {
   try {
-    const result = await client.query("SELECT * FROM my_schema.products");
+    const result = await pool.query("SELECT * FROM my_schema.products");
     res.json(result.rows);
   } catch (error) {
     console.error("Error fetching products", error.stack);
@@ -42,16 +49,18 @@ app.get("/products", async (req, res) => {
   }
 });
 
+// Add a new product
 app.post("/products", async (req, res) => {
   console.log("Received data:", req.body);
   const { name, description, price, quantity } = req.body;
 
+  // Validate required fields
   if (!name || !price || !quantity) {
     return res.status(400).json({ error: "Name, price, and quantity are required." });
   }
 
   try {
-    const result = await client.query(
+    const result = await pool.query(
       "INSERT INTO my_schema.products (name, description, price, quantity) VALUES ($1, $2, $3, $4) RETURNING *",
       [name, description, price, quantity]
     );
