@@ -207,7 +207,7 @@ const Products = () => {
             onClick={() => handleCardClick(product)}
           >
             <Box position="relative">
-              <CardMedia component="img" alt={product.name} height="200" image={sus.jpeg || "https://via.placeholder.com/150"} />
+              <CardMedia component="img" alt={product.name} height="200" image={product.image || "https://via.placeholder.com/150"} />
               <Typography
                 variant="body2"
                 color="white"
@@ -262,7 +262,7 @@ const Products = () => {
         <DialogContent>
           {selectedProduct && (
             <>
-              <CardMedia component="img" alt={selectedProduct.name} height="300" image={sus.jpeg || "https://via.placeholder.com/150"} />
+              <CardMedia component="img" alt={selectedProduct.name} height="300" image={selectedProduct.image || "https://via.placeholder.com/150"} />
               <Typography variant="h6" style={{ marginTop: "20px" }}>Price: {selectedProduct.price}</Typography>
               <Typography variant="body1" color="textSecondary" style={{ marginTop: "8px" }}>Quantity: {selectedProduct.quantity}</Typography>
               <Typography variant="body2" color="textSecondary" style={{ marginTop: "8px" }}>{selectedProduct.description}</Typography>
