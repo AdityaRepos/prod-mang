@@ -29,6 +29,7 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import AddIcon from "@mui/icons-material/Add";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
@@ -104,6 +105,14 @@ const Products = () => {
       return;
     }
     setSnackbarOpen(false);
+  };
+
+  // State to track if the product is favorited
+  const [isFavorited, setIsFavorited] = useState(false);
+
+  // Toggle favorite status
+  const handleToggleFavorite = () => {
+    setIsFavorited((prev) => !prev);
   };
 
   // Add product to backend
@@ -261,7 +270,10 @@ const Products = () => {
           )}
         </DialogContent>
         <DialogActions>
-          <IconButton onClick={handleAddToFavorites} color="secondary"><FavoriteIcon /></IconButton>
+          {/*<IconButton onClick={handleAddToFavorites} color="secondary"><FavoriteIcon /></IconButton>*/}
+          <IconButton onClick={handleToggleFavorite}>
+            {isFavorited ? <FavoriteIcon color="secondary" /> : <FavoriteBorderIcon />}
+          </IconButton>
           <IconButton onClick={handleEditIconClick} color="primary"><EditIcon /></IconButton>
           <IconButton onClick={handleDeleteProduct} color="error"><DeleteIcon /></IconButton>
           <Button onClick={handleCloseDetailDialog} color="primary">Close</Button>
