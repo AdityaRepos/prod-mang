@@ -279,6 +279,14 @@ const Products = () => {
           <Button onClick={handleEditProduct} color="primary">Update</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Snackbar for actions */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        message={snackbarMessage}
+      />
     </div>
   );
 };
