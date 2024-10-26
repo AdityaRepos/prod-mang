@@ -99,7 +99,10 @@ const Products = () => {
     setSnackbarOpen(true);
   };
 
-  const handleCloseSnackbar = () => {
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
     setSnackbarOpen(false);
   };
 
@@ -288,7 +291,7 @@ const Products = () => {
         onClose={handleCloseSnackbar}
       >
         <Alert
-          onClose={handleClose}
+          onClose={handleCloseSnackbar}
           severity="success"
           variant="filled"
           sx={{ width: '100%' }}
