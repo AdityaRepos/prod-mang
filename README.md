@@ -1,4 +1,4 @@
-# Guide
+# Basic Product Management website
 # Use this Login info:
 - **username:** a
 - **passsword:** abcd
