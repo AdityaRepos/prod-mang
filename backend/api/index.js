@@ -1,5 +1,6 @@
 const express = require("express");
 const { Client } = require("pg");
+const bcrypt = require("bcrypt"); // Import bcrypt here
 require("dotenv").config(); // Use dotenv for environment variables
 
 const app = express();
@@ -31,9 +32,96 @@ const cors = require("cors");
 // Use CORS middleware
 app.use(cors());
 
+// Basic Authentication Middleware
+const basicAuth = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
 
-// Define a route to check the connection
-app.get("/hello", async (req, res) => {
+  if (!authHeader || !authHeader.startsWith("Basic ")) {
+    return res.status(401).set("WWW-Authenticate", 'Basic realm="User Visible Realm"').send("Authorization required.");
+  }
+
+  const base64Credentials = authHeader.split(" ")[1];
+  const credentials = Buffer.from(base64Credentials, "base64").toString("ascii");
+  const [username, password] = credentials.split(":");
+
+  // Validate credentials against the database
+  try {
+    const result = await client.query(
+      "SELECT * FROM my_schema.users WHERE username = $1",
+      [username]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(401).set("WWW-Authenticate", 'Basic realm="User Visible Realm"').send("Incorrect Credentials");
+    }
+
+    const user = result.rows[0];
+
+    // Compare the password with the hashed password stored in the database
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).set("WWW-Authenticate", 'Basic realm="User Visible Realm"').send("Incorrect Credentials");
+    }
+
+    req.user = user; // Attach user info to the request object
+    next(); // Proceed to the next middleware/route handler if authentication is successful
+  } catch (error) {
+    console.error("Error validating credentials", error.stack);
+    res.status(500).send("Internal Server Error");
+  }
+};
+
+// Route for logging in (requires authentication)
+app.get("/login", basicAuth, (req, res) => {
+  res.send(`Hello ${req.user.username}, you have successfully logged in!`);
+});
+
+// Signup route to create new credentials
+app.post("/signup", async (req, res) => {
+  const { username, password } = req.body;
+
+  // Validate input
+  if (!username || !password) {
+    return res.status(400).send("Username and password are required");
+  }
+
+  try {
+    // Check if the user already exists
+    const existingUser = await client.query(
+      "SELECT * FROM my_schema.users WHERE username = $1",
+      [username]
+    );
+
+    if (existingUser.rowCount > 0) {
+      return res.status(409).send("Username already exists");
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Insert new user into the database
+    await client.query(
+      "INSERT INTO my_schema.users (username, password) VALUES ($1, $2)",
+      [username, hashedPassword]
+    );
+
+    // Automatically log in the user by sending a success response
+    res.status(201).send(`User ${username} created successfully!`);
+  } catch (error) {
+    console.error("Error signing up", error.stack);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+// Logout route to clear cached credentials
+app.get("/logout", (req, res) => {
+  // Redirect to a protected route with invalid credentials
+  res.set("WWW-Authenticate", 'Basic realm="User Visible Realm"'); // Force a re-prompt for credentials
+  res.status(401).send("You have been logged out. Please log in again."); // Optionally, inform the user
+});
+
+// Example route with basic authentication
+app.get("/hello", basicAuth, async (req, res) => {
   try {
     const result = await client.query("SELECT $1::text as message", ["Hello world!"]);
     res.send(result.rows[0].message); // Responds with "Hello world!"
@@ -55,7 +143,7 @@ app.get("/products", async (req, res) => {
 });
 
 // Example route to add a product
-app.post("/products", async (req, res) => {
+app.post("/products", basicAuth, async (req, res) => {
     console.log("Received data:", req.body); // Log the request body
     const { name, description, price, quantity } = req.body;
 
@@ -76,7 +164,7 @@ app.post("/products", async (req, res) => {
 
 
 // Example route to delete a product
-  app.delete("/products/:id", async (req, res) => {
+  app.delete("/products/:id", basicAuth, async (req, res) => {
     const { id } = req.params;
   
     try {
@@ -94,7 +182,7 @@ app.post("/products", async (req, res) => {
   });
   
     // Example route to update a product
-    app.put("/products/:id", async (req, res) => {
+    app.put("/products/:id", basicAuth, async (req, res) => {
         const { id } = req.params;
         const { name, description, price, quantity } = req.body;
       
