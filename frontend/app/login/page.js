@@ -20,7 +20,7 @@ const LoginPage = () => {
 
     try {
       // Make a POST request to the backend /login route
-      const response = await fetch("https://prod-mang-api.vercel.app//login", {
+      const response = await fetch("https://prod-mang-api.vercel.app/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
