@@ -2,6 +2,7 @@ const express = require("express");
 const { Client } = require("pg");
 const bcrypt = require("bcrypt"); // Import bcrypt here
 require("dotenv").config(); // Use dotenv for environment variables
+const cors = require("cors"); // Import CORS middleware
 
 const app = express();
 const port = process.env.PORT || 4000;
@@ -28,10 +29,12 @@ client.connect((err) => {
   }
 });
 
-const cors = require("cors");
-
 // Use CORS middleware
-app.use(cors());
+app.use(cors({
+  origin: 'https://prod-mang.vercel.app', // Allow your frontend origin
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed methods
+  credentials: true, // Allow credentials if needed
+}));
 
 // Basic token verify
 const verifyToken = (req, res, next) => {
