@@ -13,11 +13,11 @@ app.use(express.json());
 
 // Set up database client
 const client = new Client({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
+  user: process.env.DB_USER || "products_simpletell",
+  host: process.env.DB_HOST || "84zem.h.filess.io",
+  database: process.env.DB_NAME || "products_simpletell",
+  password: process.env.DB_PASSWORD || "5500635389c1a5d6b4eb12b549e5dbae0785f418",
+  port: process.env.DB_PORT || 5433,
 });
 
 // Connect to the database
@@ -83,8 +83,8 @@ app.post("/login", async (req, res) => {
     // Create JWT token
     const token = jwt.sign(
       { id: user.id, username: user.username },
-      process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRATION}
+      process.env.JWT_SECRET || "dwA06lc2KN",
+      { expiresIn: process.env.JWT_EXPIRATION || "1h" }
     );
 
     res.json({ token });  // Send token to the client
