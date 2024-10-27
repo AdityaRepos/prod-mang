@@ -121,7 +121,7 @@ app.get("/logout", (req, res) => {
 });
 
 // Example route with basic authentication
-app.get("/hello", basicAuth, async (req, res) => {
+app.get("/hello", async (req, res) => {
   try {
     const result = await client.query("SELECT $1::text as message", ["Hello world!"]);
     res.send(result.rows[0].message); // Responds with "Hello world!"
@@ -143,7 +143,7 @@ app.get("/products", async (req, res) => {
 });
 
 // Example route to add a product
-app.post("/products", basicAuth, async (req, res) => {
+app.post("/products", async (req, res) => {
     console.log("Received data:", req.body); // Log the request body
     const { name, description, price, quantity } = req.body;
 
@@ -164,7 +164,7 @@ app.post("/products", basicAuth, async (req, res) => {
 
 
 // Example route to delete a product
-  app.delete("/products/:id", basicAuth, async (req, res) => {
+  app.delete("/products/:id", async (req, res) => {
     const { id } = req.params;
   
     try {
@@ -182,7 +182,7 @@ app.post("/products", basicAuth, async (req, res) => {
   });
   
     // Example route to update a product
-    app.put("/products/:id", basicAuth, async (req, res) => {
+    app.put("/products/:id", async (req, res) => {
         const { id } = req.params;
         const { name, description, price, quantity } = req.body;
       
