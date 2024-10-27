@@ -25,6 +25,7 @@ import {
   TextField,
   Snackbar,
   Button,
+  Avatar,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import AddIcon from "@mui/icons-material/Add";
@@ -34,13 +35,13 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 // Backend API URL
-const API_URL = "https://prod-mang-api.vercel.app/products";
+const API_URL = "https://prod-mang-api.vercel.app//products";
 
 const Products = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false); // New state for edit dialog
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [products, setProducts] = useState([]);
   const [newProduct, setNewProduct] = useState({
@@ -55,30 +56,61 @@ const Products = () => {
     description: "",
     price: "",
     quantity: "",
-  }); // State for holding edited product data
+  });
 
   // Snackbar state
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
-  // Fetch products from backend
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState("");
+
+  // Additional state for login alert snackbar
+  const [loginAlertSnackbarOpen, setLoginAlertSnackbarOpen] = useState(false);
+
+  // Modify the snackbar message state for login alert
+  const [loginAlertMessage, setLoginAlertMessage] = useState("You need to log in first!");
+
+  useEffect(() => {
+    const checkUserLoggedIn = () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        setIsLoggedIn(true);
+        // Optional: Set username or any other user info if needed
+      }
+    };
+  
+    checkUserLoggedIn();
+  }, []);
+  
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(API_URL);
+        const token = localStorage.getItem("token");
+        const response = await axios.get(API_URL, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Use JWT token in the Authorization header
+          },
+        });
         setProducts(response.data);
       } catch (error) {
         console.error("Error fetching products", error);
       }
     };
+  
     fetchProducts();
   }, []);
+  
 
   const toggleDrawer = (open) => (event) => {
     if (event.type === "keydown" && (event.key === "Tab" || event.key === "Shift")) {
       return;
     }
     setDrawerOpen(open);
+  };
+
+  const handleLogIn = () => {
+    window.location.href = '/login';
   };
 
   const handleAddProduct = () => {
@@ -94,7 +126,6 @@ const Products = () => {
     setNewProduct((prevProduct) => ({ ...prevProduct, [name]: value }));
   };
 
-  // Snackbar handler
   const handleSnackbar = (message) => {
     setSnackbarMessage(message);
     setSnackbarOpen(true);
@@ -107,18 +138,32 @@ const Products = () => {
     setSnackbarOpen(false);
   };
 
-  // State to track if the product is favorited
   const [isFavorited, setIsFavorited] = useState(false);
 
-  // Toggle favorite status
   const handleToggleFavorite = () => {
     setIsFavorited((prev) => !prev);
   };
 
-  // Add product to backend
+  const handleCloseLoginAlertSnackbar = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setLoginAlertSnackbarOpen(false);
+  };
+
   const handleSubmit = async () => {
+    if (!isLoggedIn) {
+      setLoginAlertSnackbarOpen(true); // Show login alert snackbar
+      return;
+    }
+
     try {
-      const response = await axios.post(API_URL, newProduct);
+      const token = localStorage.getItem("token");
+      const response = await axios.post(API_URL, newProduct, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Use JWT token in the Authorization header
+        },
+      });
       setProducts([...products, response.data]);
       setDialogOpen(false);
       setNewProduct({ name: "", description: "", price: "", quantity: "" });
@@ -138,11 +183,6 @@ const Products = () => {
     setSelectedProduct(null);
   };
 
-  const handleAddToFavorites = () => {
-    handleSnackbar("Added to Favorites!"); {/* Snackbar for adding to favorites. Not in use for now.*/}
-  };
-
-  // Open edit dialog and set initial values
   const handleEditIconClick = () => {
     setEditedProduct({
       name: selectedProduct.name,
@@ -153,10 +193,19 @@ const Products = () => {
     setEditDialogOpen(true);
   };
 
-  // Update product details
   const handleEditProduct = async () => {
+    if (!isLoggedIn) {
+      setLoginAlertSnackbarOpen(true); // Show login alert snackbar
+      return;
+    }
+
     try {
-      const response = await axios.put(`${API_URL}/${selectedProduct.id}`, editedProduct);
+      const token = localStorage.getItem("token");
+      const response = await axios.put(`${API_URL}/${selectedProduct.id}`, editedProduct, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Use JWT token in the Authorization header
+        },
+      });
       setProducts(products.map((prod) => (prod.id === response.data.id ? response.data : prod)));
       setEditDialogOpen(false);
       handleSnackbar("Product updated successfully!");
@@ -165,16 +214,32 @@ const Products = () => {
     }
   };
 
-  // Delete product
   const handleDeleteProduct = async () => {
+    if (!isLoggedIn) {
+      setLoginAlertSnackbarOpen(true); // Show login alert snackbar
+      return;
+    }
+
     try {
-      await axios.delete(`${API_URL}/${selectedProduct.id}`);
+      const token = localStorage.getItem("token");
+      await axios.delete(`${API_URL}/${selectedProduct.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Use JWT token in the Authorization header
+        },
+      });
       setProducts(products.filter((prod) => prod.id !== selectedProduct.id));
       setDetailDialogOpen(false);
       handleSnackbar("Product deleted successfully!");
     } catch (error) {
       console.error("Error deleting product", error);
     }
+  };
+
+
+  const handleLogOut = () => {
+    localStorage.removeItem("token");
+    setIsLoggedIn(false);
+    alert("You have been logged out.");
   };
 
   return (
@@ -184,7 +249,19 @@ const Products = () => {
           <IconButton edge="start" color="inherit" onClick={toggleDrawer(true)} aria-label="menu">
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6">Products</Typography>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>Products</Typography>
+          {isLoggedIn ? (
+            <Avatar alt={username} src="image.jpg" /> // Display avatar when logged in
+          ) : (
+            <Button color="inherit" onClick={handleLogIn}>
+              Log In
+            </Button>
+          )}
+          {isLoggedIn && (
+            <Button color="inherit" onClick={handleLogOut}>
+              Log Out
+            </Button>
+          )}
         </Toolbar>
       </AppBar>
 
@@ -239,6 +316,19 @@ const Products = () => {
       <Fab color="primary" aria-label="add" style={{ position: "fixed", bottom: "20px", left: "20px" }} onClick={handleAddProduct}>
         <AddIcon />
       </Fab>
+
+      {/* Snackbar for notifications */}
+      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar} message={snackbarMessage} />
+      {/* Login Alert Snackbar */}
+      <Snackbar
+        open={loginAlertSnackbarOpen}
+        autoHideDuration={1500}
+        onClose={handleCloseLoginAlertSnackbar}
+      >
+        <Alert onClose={handleCloseLoginAlertSnackbar} severity="error" variant="filled" sx={{ width: '100%' }}>
+          {loginAlertMessage}
+        </Alert>
+      </Snackbar>
 
       {/* Add Product Dialog */}
       <Dialog open={dialogOpen} onClose={handleCloseDialog}>
