@@ -28,5 +28,5 @@
 - **In Page Notifications(Snackbar)**: Users receive notifications for adding, updating or deleting products. Also, alerts like login required.
 
 ## 6. Security
-- **Password Protection**: User passwords are securely hashed and stored to prevent unauthorized access.
+- **Password Protection**: Users password are securely hashed and stored to prevent unauthorized access.
 - **Data Authentication**: Only logged in users can add product, update or delete existing product. If they try without login in they will notified that they have to login for this.
